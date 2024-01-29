@@ -1,4 +1,4 @@
-import 'package:dandy/pages/home.dart';
+import 'package:dandy/pages/charselect.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -16,7 +16,7 @@ class Dandy extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const CharacterSelectionPage(),
     );
   }
 }

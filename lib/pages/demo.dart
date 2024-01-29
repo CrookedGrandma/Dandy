@@ -2,14 +2,14 @@ import 'package:dandy/page.dart';
 import 'package:dandy/widgets.dart';
 import 'package:flutter/material.dart';
 
-class HomePage extends BasePage {
-  const HomePage({super.key});
+class DemoPage extends BasePage {
+  const DemoPage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<DemoPage> createState() => _DemoPageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _DemoPageState extends State<DemoPage> {
   int _counter = 0;
 
   void _incrementCounter() {
