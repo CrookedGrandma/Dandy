@@ -114,14 +114,14 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
         NamedField<int> _ => TextInputType.number,
         _ => throw "Non-supported input field type",
       },
-      validator: switch (field) {
-        NamedField<int> _ => (value) {
-          if (value == null || int.tryParse(value) == null) {
-            return "Must contain an integer";
-          }
-          return null;
-        },
-        _ => null,
+      validator: (value) {
+        if (value == null || value == "") {
+          return "Must contain a value";
+        }
+        if (field is NamedField<int> && int.tryParse(value) == null) {
+          return "Must contain an integer";
+        }
+        return null;
       },
     );
   }
