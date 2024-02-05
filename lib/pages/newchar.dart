@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:dandy/models/abilities.dart';
 import 'package:dandy/models/character.dart';
+import 'package:dandy/models/person.dart';
 import 'package:dandy/page.dart';
 import 'package:dandy/widgets.dart';
 import 'package:darq/darq.dart';
@@ -21,6 +22,11 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
   Map<String, List<NamedField>> fields = {
     "Basics": [
       NamedField<String>("Character name", "name"),
+    ],
+    "Person": [
+      NamedField<int>("Level", "person/level"),
+      NamedField<String>("Race", "person/race"),
+      NamedField<String>("Class", "person/class"),
     ],
     "Abilities": [
       NamedField<int>("Strength", "abilities/strength"),
@@ -125,6 +131,11 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
     return Character(
       allFields.find("name").value(),
       "imageBase64",
+      Person(
+        allFields.find("person/level").value(),
+        allFields.find("person/race").value(),
+        allFields.find("person/class").value(),
+      ),
       Abilities(
         allFields.find("abilities/strength").value(),
         allFields.find("abilities/dexterity").value(),

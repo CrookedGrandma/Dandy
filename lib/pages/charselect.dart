@@ -78,9 +78,9 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     return Column(
       children: characters.isNotEmpty
         ? characters.map((char) => ListTile(
-          leading: Icon(Icons.person_outline),
+          leading: const Icon(Icons.person_outline), // TODO: replace with image
           title: Text(char.name),
-          subtitle: Text("test"),
+          subtitle: Text("Level ${char.person?.level ?? "LEVEL"} ${char.person?.race ?? "RACE"} ${char.person?.classs ?? "CLASS"}"),
         )).toList()
         : [
           const Text("No characters yet"),
