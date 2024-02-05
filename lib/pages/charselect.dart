@@ -1,9 +1,13 @@
+import 'dart:convert';
+
 import 'package:dandy/components/loadingscreen.dart';
 import 'package:dandy/models/character.dart';
 import 'package:dandy/page.dart';
+import 'package:dandy/pages/newchar.dart';
 import 'package:dandy/widgets.dart';
 import 'package:flutter/material.dart';
-import 'package:localstorage/localstorage.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
 
 class CharacterSelectionPage extends BasePage {
   const CharacterSelectionPage({super.key});
@@ -13,39 +17,56 @@ class CharacterSelectionPage extends BasePage {
 }
 
 class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
-  final LocalStorage storage = LocalStorage("characters");
+  Database? database;
+  late Future<bool> _initializer;
 
-  bool initialized = false;
+  List<Character> characters = [];
 
-  late List<Character> characters;
+  _CharacterSelectionPageState() {
+    _initializer = initialize();
+  }
+
+  Future<bool> initialize() async {
+    // databaseFactory.deleteDatabase(join(await getDatabasesPath(), "dandy.db")); // TODO: REMOVE THIS
+    database = await getDb();
+    List<Map<String, dynamic>> rows = await database!.query("characters");
+    characters = List.generate(rows.length, (i) => Character.fromJson(jsonDecode(rows[i]["json"])));
+    return true;
+  }
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder(
-      future: storage.ready,
+      future: _initializer,
       builder: (BuildContext context, snapshot) {
         if (snapshot.data != true) {
           return basicScaffold(context, widget, body: const LoadingScreenInCenter());
-        }
-
-        if (!initialized) {
-          var charList = storage.getItem("list");
-          if (charList == null) {
-            characters = [];
-          }
-          else {
-            characters =
-                charList.map((char) => Character.fromJson(char)).toList();
-          }
-          initialized = true;
         }
 
         return basicScaffold(context, widget, body: Padding(
           padding: const EdgeInsets.all(10),
           child: Column(
             children: [
-              CharacterSelector(),
+              characterSelector(),
               // 'new character' button
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton.icon(
+                    onPressed: () async {
+                      bool? changed = await Navigator.push(context,
+                        MaterialPageRoute<bool>(builder: (context) => NewCharacterPage(database!)));
+                      if (changed == true) {
+                        setState(() {
+                          _initializer = initialize();
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.person_add),
+                    label: const Text("New character"),
+                  ),
+                ],
+              ),
             ],
           )
         ));
@@ -53,13 +74,29 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     );
   }
 
-  Widget CharacterSelector() {
+  Widget characterSelector() {
     return Column(
-      children: characters.map((char) => Row(
-        children: [
-          Text(char.name)
+      children: characters.isNotEmpty
+        ? characters.map((char) => ListTile(
+          leading: Icon(Icons.person_outline),
+          title: Text(char.name),
+          subtitle: Text("test"),
+        )).toList()
+        : [
+          const Text("No characters yet"),
         ],
-      )).toList(),
+    );
+  }
+
+  Future<Database> getDb() async {
+    String path = join(await getDatabasesPath(), "dandy.db");
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: (db, version) {
+        return db.execute(
+            "CREATE TABLE characters(id INTEGER PRIMARY KEY, json TEXT)");
+      }
     );
   }
 }
