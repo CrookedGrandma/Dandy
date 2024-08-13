@@ -7,12 +7,12 @@ part of 'abilities.dart';
 // **************************************************************************
 
 Abilities _$AbilitiesFromJson(Map<String, dynamic> json) => Abilities(
-      json['strength'] as int,
-      json['dexterity'] as int,
-      json['constitution'] as int,
-      json['intelligence'] as int,
-      json['wisdom'] as int,
-      json['charisma'] as int,
+      (json['strength'] as num).toInt(),
+      (json['dexterity'] as num).toInt(),
+      (json['constitution'] as num).toInt(),
+      (json['intelligence'] as num).toInt(),
+      (json['wisdom'] as num).toInt(),
+      (json['charisma'] as num).toInt(),
     );
 
 Map<String, dynamic> _$AbilitiesToJson(Abilities instance) => <String, dynamic>{

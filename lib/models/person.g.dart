@@ -7,7 +7,7 @@ part of 'person.dart';
 // **************************************************************************
 
 Person _$PersonFromJson(Map<String, dynamic> json) => Person(
-      json['level'] as int,
+      (json['level'] as num).toInt(),
       json['race'] as String,
       json['classs'] as String,
     );
