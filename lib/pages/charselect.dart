@@ -30,7 +30,11 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     // databaseFactory.deleteDatabase(join(await getDatabasesPath(), "dandy.db")); // TODO: REMOVE THIS
     database = await getDb();
     List<Map<String, dynamic>> rows = await database!.query("characters");
-    characters = List.generate(rows.length, (i) => Character.fromJson(jsonDecode(rows[i]["json"])));
+    characters = List.generate(rows.length, (i) {
+      Character char = Character.fromJson(jsonDecode(rows[i]["json"]));
+      char.imageBase64 = rows[i]["image"];
+      return char;
+    });
     return true;
   }
 
@@ -78,7 +82,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     return Column(
       children: characters.isNotEmpty
         ? characters.map((char) => ListTile(
-          leading: const Icon(Icons.person_outline), // TODO: replace with image
+          leading: Image.memory(base64Decode(char.imageBase64)),
           title: Text(char.name),
           subtitle: Text("Level ${char.person?.level ?? "LEVEL"} ${char.person?.race ?? "RACE"} ${char.person?.classs ?? "CLASS"}"),
         )).toList()
@@ -95,7 +99,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
       version: 1,
       onCreate: (db, version) {
         return db.execute(
-            "CREATE TABLE characters(id INTEGER PRIMARY KEY, json TEXT)");
+          "CREATE TABLE characters(id INTEGER PRIMARY KEY, json TEXT, image VARCHAR(64000000))");
       }
     );
   }

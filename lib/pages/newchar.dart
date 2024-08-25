@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dandy/models/abilities.dart';
 import 'package:dandy/models/character.dart';
@@ -7,6 +8,7 @@ import 'package:dandy/page.dart';
 import 'package:dandy/widgets.dart';
 import 'package:darq/darq.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:sqflite/sqflite.dart';
 
 class NewCharacterPage extends BasePage {
@@ -39,6 +41,10 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
   };
 
   final _formKey = GlobalKey<FormState>();
+  final ImagePicker _imagePicker = ImagePicker();
+
+  Image? _profilePic;
+  File? _profilePicFile;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +56,13 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
             padding: const EdgeInsets.all(10),
             child: Column(
               children: [
+                IconButton.outlined(
+                  onPressed: selectImage,
+                  icon: _profilePic ?? const Icon(Icons.person),
+                  iconSize: 48,
+                  style: const ButtonStyle(shape: WidgetStatePropertyAll(ContinuousRectangleBorder())),
+                  padding: _profilePic == null ? null : const EdgeInsets.all(4),
+                ),
                 ...inputFields(),
                 ElevatedButton.icon(
                   onPressed: () {
@@ -57,10 +70,13 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
                       return;
                     }
                     Character newChar = parseFields();
-                    widget.database.insert("characters", { "json": jsonEncode(newChar) })
-                      .then((result) {
-                        Navigator.pop(context, true);
-                      });
+                    widget.database.insert("characters", {
+                      "json": jsonEncode(newChar),
+                      "image": base64Encode(_profilePicFile!.readAsBytesSync())
+                    })
+                    .then((result) {
+                      Navigator.pop(context, true);
+                    });
                   },
                   icon: const Icon(Icons.check),
                   label: const Text("Done!"),
@@ -71,6 +87,19 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
         ],
       ),
     ));
+  }
+
+  Future<void> selectImage() async {
+    XFile? image = await _imagePicker.pickImage(source: ImageSource.gallery);
+    if (image == null)
+      return;
+    setState(() {
+      _profilePicFile = File(image.path);
+      _profilePic = Image.file(
+        _profilePicFile!,
+        width: 52,
+      );
+    });
   }
 
   List<Widget> inputFields() {
