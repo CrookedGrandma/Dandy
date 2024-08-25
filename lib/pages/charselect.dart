@@ -82,7 +82,10 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     return Column(
       children: characters.isNotEmpty
         ? characters.map((char) => ListTile(
-          leading: Image.memory(base64Decode(char.imageBase64)),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(10),
+            child: Image.memory(base64Decode(char.imageBase64)),
+          ),
           title: Text(char.name),
           subtitle: Text("Level ${char.person?.level ?? "LEVEL"} ${char.person?.race ?? "RACE"} ${char.person?.classs ?? "CLASS"}"),
         )).toList()
