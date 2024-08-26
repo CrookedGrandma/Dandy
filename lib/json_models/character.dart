@@ -6,6 +6,9 @@ part 'character.g.dart';
 
 @JsonSerializable()
 class Character {
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  late int dbId;
+
   String name;
   String imageBase64;
   Person? person;

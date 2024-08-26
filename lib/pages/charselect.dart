@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:confirm_dialog/confirm_dialog.dart';
 import 'package:dandy/components/loadingscreen.dart';
 import 'package:dandy/json_models/character.dart';
 import 'package:dandy/page.dart';
@@ -27,8 +28,16 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     // databaseFactory.deleteDatabase(join(await getDatabasesPath(), "dandy.db")); // TODO: REMOVE THIS
     _database = await getDb();
     List<Map<String, dynamic>> rows = await _database!.query("characters");
-    _characters = List.generate(rows.length, (i) => Character.fromJson(jsonDecode(rows[i]["json"])));
+    _characters = List.generate(rows.length, (i) {
+      Character char = Character.fromJson(jsonDecode(rows[i]["json"]));
+      char.dbId = rows[i]["id"];
+      return char;
+    });
     return true;
+  }
+
+  void refresh() {
+    _initializer = initialize();
   }
 
   @override
@@ -54,9 +63,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
                       bool? changed = await Navigator.push(context,
                         MaterialPageRoute<bool>(builder: (context) => NewCharacterPage(_database!)));
                       if (changed == true) {
-                        setState(() {
-                          _initializer = initialize();
-                        });
+                        setState(refresh);
                       }
                     },
                     icon: const Icon(Icons.person_add),
@@ -85,9 +92,26 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
           title: Text(char.name),
           subtitle: Text("Level ${char.person?.level ?? "LEVEL"} ${char.person?.race ?? "RACE"} ${char.person?.classs ?? "CLASS"}"),
           onTap: () {
+            // TODO: refresh if something changed
             Navigator.push(context,
               MaterialPageRoute(builder: (context) => CharacterViewPage(char)));
           },
+          trailing: PopupMenuButton(
+            child: const Icon(Icons.more_vert),
+            onSelected: (selected) {
+              if (selected == "delete") {
+                deleteCharacter(char, context);
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: "delete",
+                child: Row(
+                  children: [Icon(Icons.delete_forever), Text("Delete")],
+                ),
+              ),
+            ],
+          ),
         )).toList()
         : [
           const Text("No characters yet"),
@@ -105,5 +129,16 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
           "CREATE TABLE characters(id INTEGER PRIMARY KEY, json TEXT)");
       }
     );
+  }
+
+  Future<void> deleteCharacter(Character char, BuildContext context) async {
+    if (await confirm(
+      context,
+      title: const Text("Are you sure?"),
+      content: Text("Are you sure you want to delete ${char.name}?"),
+    )) {
+      await _database!.delete("characters", where: "id = ?", whereArgs: [char.dbId]);
+      setState(refresh);
+    }
   }
 }
