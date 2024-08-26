@@ -1,7 +1,7 @@
 import 'dart:convert';
 
 import 'package:dandy/components/loadingscreen.dart';
-import 'package:dandy/models/character.dart';
+import 'package:dandy/json_models/character.dart';
 import 'package:dandy/page.dart';
 import 'package:dandy/pages/newchar.dart';
 import 'package:dandy/widgets.dart';
@@ -17,24 +17,16 @@ class CharacterSelectionPage extends BasePage {
 }
 
 class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
-  Database? database;
-  late Future<bool> _initializer;
+  Database? _database;
+  late Future<bool> _initializer = initialize();
 
-  List<Character> characters = [];
-
-  _CharacterSelectionPageState() {
-    _initializer = initialize();
-  }
+  List<Character> _characters = [];
 
   Future<bool> initialize() async {
     // databaseFactory.deleteDatabase(join(await getDatabasesPath(), "dandy.db")); // TODO: REMOVE THIS
-    database = await getDb();
-    List<Map<String, dynamic>> rows = await database!.query("characters");
-    characters = List.generate(rows.length, (i) {
-      Character char = Character.fromJson(jsonDecode(rows[i]["json"]));
-      char.imageBase64 = rows[i]["image"];
-      return char;
-    });
+    _database = await getDb();
+    List<Map<String, dynamic>> rows = await _database!.query("characters");
+    _characters = List.generate(rows.length, (i) => Character.fromJson(jsonDecode(rows[i]["json"])));
     return true;
   }
 
@@ -59,7 +51,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
                   ElevatedButton.icon(
                     onPressed: () async {
                       bool? changed = await Navigator.push(context,
-                        MaterialPageRoute<bool>(builder: (context) => NewCharacterPage(database!)));
+                        MaterialPageRoute<bool>(builder: (context) => NewCharacterPage(_database!)));
                       if (changed == true) {
                         setState(() {
                           _initializer = initialize();
@@ -80,12 +72,15 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
 
   Widget characterSelector() {
     return Column(
-      children: characters.isNotEmpty
-        ? characters.map((char) => ListTile(
+      children: _characters.isNotEmpty
+        ? _characters.map((char) => ListTile(
           leading: ClipRRect(
             borderRadius: BorderRadius.circular(10),
-            child: Image.memory(base64Decode(char.imageBase64)),
+            child: char.imageBase64.isEmpty
+              ? const Icon(Icons.person, size: 56)
+              : Image.memory(base64Decode(char.imageBase64)),
           ),
+          minLeadingWidth: 64,
           title: Text(char.name),
           subtitle: Text("Level ${char.person?.level ?? "LEVEL"} ${char.person?.race ?? "RACE"} ${char.person?.classs ?? "CLASS"}"),
         )).toList()
@@ -102,7 +97,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
       version: 1,
       onCreate: (db, version) {
         return db.execute(
-          "CREATE TABLE characters(id INTEGER PRIMARY KEY, json TEXT, image VARCHAR(64000000))");
+          "CREATE TABLE characters(id INTEGER PRIMARY KEY, json TEXT)");
       }
     );
   }

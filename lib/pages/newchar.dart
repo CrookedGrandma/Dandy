@@ -1,12 +1,13 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:dandy/models/abilities.dart';
-import 'package:dandy/models/character.dart';
-import 'package:dandy/models/person.dart';
+import 'package:dandy/json_models/abilities.dart';
+import 'package:dandy/json_models/character.dart';
+import 'package:dandy/json_models/person.dart';
+import 'package:dandy/models/named_field.dart';
+import 'package:dandy/constants.dart';
 import 'package:dandy/page.dart';
 import 'package:dandy/widgets.dart';
-import 'package:darq/darq.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:sqflite/sqflite.dart';
@@ -21,26 +22,7 @@ class NewCharacterPage extends BasePage {
 }
 
 class _NewCharacterPageState extends State<NewCharacterPage> {
-  Map<String, List<NamedField>> fields = {
-    "Basics": [
-      NamedField<String>("Character name", "name"),
-    ],
-    "Person": [
-      NamedField<int>("Level", "person/level"),
-      NamedField<String>("Race", "person/race"),
-      NamedField<String>("Class", "person/class"),
-    ],
-    "Abilities": [
-      NamedField<int>("Strength", "abilities/strength"),
-      NamedField<int>("Dexterity", "abilities/dexterity"),
-      NamedField<int>("Constitution", "abilities/constitution"),
-      NamedField<int>("Intelligence", "abilities/intelligence"),
-      NamedField<int>("Wisdom", "abilities/wisdom"),
-      NamedField<int>("Charisma", "abilities/charisma"),
-    ]
-  };
-
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final ImagePicker _imagePicker = ImagePicker();
 
   Image? _profilePic;
@@ -71,8 +53,7 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
                     }
                     Character newChar = parseFields();
                     widget.database.insert("characters", {
-                      "json": jsonEncode(newChar),
-                      "image": base64Encode(_profilePicFile!.readAsBytesSync())
+                      "json": jsonEncode(newChar)
                     })
                     .then((result) {
                       Navigator.pop(context, true);
@@ -103,7 +84,7 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
   }
 
   List<Widget> inputFields() {
-    return fields.entries.map((entry) => Row(
+    return Constants.fields.entries.map((entry) => Row(
       children: [
         Expanded(
           child: Padding(
@@ -156,10 +137,12 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
   }
 
   Character parseFields() {
-    List<NamedField> allFields = fields.entries.selectMany((entry, i) => entry.value).toList();
+    List<NamedField> allFields = Constants.fieldsFlat;
     return Character(
       allFields.find("name").value(),
-      "imageBase64",
+      _profilePicFile != null
+        ? base64Encode(_profilePicFile!.readAsBytesSync())
+        : "",
       Person(
         allFields.find("person/level").value(),
         allFields.find("person/race").value(),
@@ -174,36 +157,5 @@ class _NewCharacterPageState extends State<NewCharacterPage> {
         allFields.find("abilities/charisma").value(),
       )
     );
-  }
-}
-
-extension NamedFieldListExtensions on List<NamedField> {
-  NamedField find(String logicalName) {
-    var found = where((f) => f.logicalName == logicalName);
-    if (found.isEmpty) {
-      throw "Logical name not found in any field";
-    }
-    if (found.length > 1) {
-      throw "Multiple fields found with this logical name";
-    }
-    return found.first;
-  }
-}
-
-class NamedField<T> {
-  final String name;
-  final String logicalName;
-  final TextEditingController controller = TextEditingController();
-
-  NamedField(this.name, this.logicalName);
-
-  T value() {
-    if (T == String) {
-      return controller.text as T;
-    }
-    if (T == int) {
-      return int.parse(controller.text) as T;
-    }
-    throw "Return type of field '$logicalName' not yet supported";
   }
 }

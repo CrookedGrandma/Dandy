@@ -1,6 +1,6 @@
-import 'package:dandy/models/person.dart';
+import 'package:dandy/json_models/abilities.dart';
+import 'package:dandy/json_models/person.dart';
 import 'package:json_annotation/json_annotation.dart';
-import 'abilities.dart';
 
 part 'character.g.dart';
 
