@@ -16,7 +16,7 @@ class Dandy extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple, brightness: Brightness.dark),
         useMaterial3: true,
       ),
-      home: const CharacterSelectionPage(),
+      home: CharacterSelectionPage(),
     );
   }
 }

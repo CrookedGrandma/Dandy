@@ -3,7 +3,7 @@ import 'package:dandy/widgets.dart';
 import 'package:flutter/material.dart';
 
 class DemoPage extends BasePage {
-  const DemoPage({super.key});
+  DemoPage({super.key});
 
   @override
   State<DemoPage> createState() => _DemoPageState();

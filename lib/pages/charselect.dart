@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dandy/components/loadingscreen.dart';
 import 'package:dandy/json_models/character.dart';
 import 'package:dandy/page.dart';
+import 'package:dandy/pages/charview.dart';
 import 'package:dandy/pages/newchar.dart';
 import 'package:dandy/widgets.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CharacterSelectionPage extends BasePage {
-  const CharacterSelectionPage({super.key});
+  CharacterSelectionPage({super.key});
 
   @override
   State<CharacterSelectionPage> createState() => _CharacterSelectionPageState();
@@ -43,7 +44,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
           padding: const EdgeInsets.all(10),
           child: Column(
             children: [
-              characterSelector(),
+              characterSelector(context),
               // 'new character' button
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -70,7 +71,7 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
     );
   }
 
-  Widget characterSelector() {
+  Widget characterSelector(BuildContext context) {
     return Column(
       children: _characters.isNotEmpty
         ? _characters.map((char) => ListTile(
@@ -83,6 +84,10 @@ class _CharacterSelectionPageState extends State<CharacterSelectionPage> {
           minLeadingWidth: 64,
           title: Text(char.name),
           subtitle: Text("Level ${char.person?.level ?? "LEVEL"} ${char.person?.race ?? "RACE"} ${char.person?.classs ?? "CLASS"}"),
+          onTap: () {
+            Navigator.push(context,
+              MaterialPageRoute(builder: (context) => CharacterViewPage(char)));
+          },
         )).toList()
         : [
           const Text("No characters yet"),
