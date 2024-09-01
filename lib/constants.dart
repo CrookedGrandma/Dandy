@@ -22,5 +22,5 @@ class Constants {
   };
 
   static List<NamedField> get fieldsFlat
-    => fields.entries.selectMany((entry, i) => entry.value).toList();
+    => fields.values.selectMany((val, i) => val).toList();
 }
