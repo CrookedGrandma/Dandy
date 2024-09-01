@@ -12,7 +12,7 @@ import 'package:path/path.dart';
 import 'package:sqflite/sqflite.dart';
 
 class CharacterSelectionPage extends BasePage {
-  CharacterSelectionPage({super.key});
+  const CharacterSelectionPage({super.key});
 
   @override
   State<CharacterSelectionPage> createState() => _CharacterSelectionPageState();

@@ -15,7 +15,7 @@ import 'package:sqflite/sqflite.dart';
 class NewCharacterPage extends BasePage {
   final Database database;
 
-  NewCharacterPage(this.database, {super.key}) : super(title: "New Character");
+  const NewCharacterPage(this.database, {super.key}) : super(title: "New Character");
 
   @override
   State<NewCharacterPage> createState() => _NewCharacterPageState();
